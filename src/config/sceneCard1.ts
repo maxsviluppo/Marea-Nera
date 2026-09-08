@@ -16,7 +16,6 @@ export const SCENE_CARD_1 = {
   image: '/media/card1.png',
   chapter: 'Capitolo 1: La stanza silenziosa',
   text: `L'aria sa di cera bruciata, tabacco e pioggia salmastra. Ti risvegli con la testa pesante. Sul tavolo di quercia giace una lettera sigillata con ceralacca scarlatta, una lama affilata e diversi sigilli sparsi… Nessuna traccia del tuo contatto.`,
-  flipHint: 'Tocca la carta per girarla',
   choices: [
     {
       id: 'esamina',

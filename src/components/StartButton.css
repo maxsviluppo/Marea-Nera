@@ -3,16 +3,10 @@
   padding: 0;
   border: none;
   background: none;
-  transform: translateY(0);
-  transition: transform 0.15s ease;
-}
-
-.start-btn:active:not(:disabled) {
-  transform: translateY(6px);
+  touch-action: manipulation;
 }
 
 .start-btn:active:not(:disabled) .start-btn__body {
-  transform: translateY(2px);
   box-shadow:
     0 2px 0 var(--gold-dark),
     0 4px 12px rgba(0, 0, 0, 0.45),
@@ -47,7 +41,7 @@
     inset 0 2px 0 rgba(255, 255, 255, 0.35),
     inset 0 -3px 6px rgba(80, 50, 0, 0.35);
   transform: translateY(0);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
 }
 
 .start-btn__face {
