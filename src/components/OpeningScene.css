@@ -1,0 +1,142 @@
+.opening {
+  width: 100%;
+  height: 100dvh;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.opening__frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: calc(100dvh * 9 / 16);
+  max-height: 100dvh;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.65);
+}
+
+@media (min-aspect-ratio: 9/16) {
+  .opening__frame {
+    width: auto;
+    height: 100%;
+  }
+}
+
+@media (max-aspect-ratio: 9/16) {
+  .opening__frame {
+    width: 100%;
+    height: auto;
+    max-height: 100dvh;
+  }
+}
+
+.opening__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.opening__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.opening__overlay--idle {
+  justify-content: flex-end;
+  padding:
+    max(1.5rem, env(safe-area-inset-top))
+    1.25rem
+    max(2.5rem, env(safe-area-inset-bottom));
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 55%,
+    rgba(5, 10, 18, 0.55) 100%
+  );
+}
+
+.opening__actions--solo {
+  width: 100%;
+}
+
+.opening__tap-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.opening__card-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: #000;
+}
+
+.entry-flip {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+}
+
+.entry-flip__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.85s ease-in-out;
+}
+
+.entry-flip__inner--flipped {
+  transform: rotateY(180deg);
+}
+
+.entry-flip__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.entry-flip__face--back {
+  transform: rotateY(180deg);
+}
+
+.opening__overlay--ended {
+  display: none;
+}
+
+.opening__actions {
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.opening__continue-hint {
+  font-family: var(--pirate-font);
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  animation: hint-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}

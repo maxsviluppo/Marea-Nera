@@ -1,0 +1,65 @@
+.start-btn {
+  position: relative;
+  padding: 0;
+  border: none;
+  background: none;
+  transform: translateY(0);
+  transition: transform 0.15s ease;
+}
+
+.start-btn:active:not(:disabled) {
+  transform: translateY(6px);
+}
+
+.start-btn:active:not(:disabled) .start-btn__body {
+  transform: translateY(2px);
+  box-shadow:
+    0 2px 0 var(--gold-dark),
+    0 4px 12px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.start-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.start-btn__shadow {
+  position: absolute;
+  inset: 8px -4px -10px;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, transparent 72%);
+  filter: blur(6px);
+  z-index: 0;
+}
+
+.start-btn__body {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding: 0.95rem 3.2rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #e8c84a 0%, #c9a227 38%, #9a7518 100%);
+  border: 2px solid #f5e6a8;
+  box-shadow:
+    0 8px 0 var(--gold-dark),
+    0 14px 28px rgba(0, 0, 0, 0.45),
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -3px 6px rgba(80, 50, 0, 0.35);
+  transform: translateY(0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.start-btn__face {
+  display: block;
+  font-family: var(--pirate-font);
+  font-size: clamp(1.85rem, 7vw, 2.4rem);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2a1808;
+  text-shadow:
+    0 1px 0 rgba(255, 240, 180, 0.8),
+    0 2px 4px rgba(60, 30, 0, 0.35);
+  line-height: 1;
+}
