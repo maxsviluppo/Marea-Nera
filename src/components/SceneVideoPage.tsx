@@ -8,7 +8,6 @@ import './SceneVideoPage.css';
 type Phase = 'video1_playing' | 'video1_ended' | 'video2_playing' | 'card2';
 
 type SceneVideoPageProps = {
-  onBack: () => void;
   onChoiceCard2?: (choice: ChoiceHotspot) => void;
 };
 
@@ -19,7 +18,7 @@ function configureVideoForIOS(video: HTMLVideoElement) {
   video.playsInline = true;
 }
 
-export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPageProps) {
+export default function SceneVideoPage({ onChoiceCard2 }: SceneVideoPageProps) {
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
   const lastFrame1Ref = useRef(0);
@@ -135,18 +134,6 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
   return (
     <section className="scene-page" aria-label="Marea Nera — Scena del Libro">
       <div className="scene-page__frame">
-        {/* Top Header */}
-        <header className="scene-page__header">
-          <button
-            type="button"
-            className="scene-page__back-btn"
-            onClick={onBack}
-            aria-label="Torna al libro principale"
-          >
-            ← Libro
-          </button>
-        </header>
-
         {/* Icone circolari semi-trasparenti: Audio (basso a sx) e Skip (basso a dx) con SVG di gioco */}
         {isVideoActive && (
           <>
