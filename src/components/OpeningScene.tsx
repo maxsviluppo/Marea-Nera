@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import { GAME, OPENING_VIDEO } from '../config/media';
+import { type ChoiceHotspot } from '../config/sceneCard1';
 import InteractiveFlipCard from './InteractiveFlipCard';
 import StartButton from './StartButton';
 import './OpeningScene.css';
 
 type Phase = 'idle' | 'playing' | 'ended' | 'card';
+
+type OpeningSceneProps = {
+  onChoice?: (choice: ChoiceHotspot) => void;
+};
 
 function configureVideoForIOS(video: HTMLVideoElement) {
   video.setAttribute('playsinline', '');
@@ -13,35 +18,12 @@ function configureVideoForIOS(video: HTMLVideoElement) {
   video.playsInline = true;
 }
 
-export default function OpeningScene() {
+export default function OpeningScene({ onChoice }: OpeningSceneProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastFrameRef = useRef(0);
   const [phase, setPhase] = useState<Phase>('idle');
-  const [ready, setReady] = useState(false);
-
-  const primeFirstFrame = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    configureVideoForIOS(video);
-    video.pause();
-
-    // Su iOS il primo fotogramma spesso resta nero senza un play() muto
-    const wasMuted = video.muted;
-    video.muted = true;
-
-    try {
-      video.currentTime = 0;
-      await video.play();
-      video.pause();
-      video.currentTime = 0;
-    } catch {
-      video.currentTime = 0;
-    } finally {
-      video.muted = wasMuted;
-      setReady(true);
-    }
-  }, []);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showUnmuteHint, setShowUnmuteHint] = useState(false);
 
   const freezeLastFrame = useCallback(() => {
     const video = videoRef.current;
@@ -57,18 +39,8 @@ export default function OpeningScene() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-
     configureVideoForIOS(video);
-
-    const onLoaded = () => {
-      void primeFirstFrame();
-    };
-
-    video.addEventListener('loadeddata', onLoaded);
-    if (video.readyState >= 2) void primeFirstFrame();
-
-    return () => video.removeEventListener('loadeddata', onLoaded);
-  }, [primeFirstFrame]);
+  }, []);
 
   useEffect(() => {
     if (phase !== 'ended' && phase !== 'card') return;
@@ -77,7 +49,9 @@ export default function OpeningScene() {
 
     const restore = () => {
       video.pause();
-      video.currentTime = lastFrameRef.current;
+      if (lastFrameRef.current > 0) {
+        video.currentTime = lastFrameRef.current;
+      }
     };
 
     video.addEventListener('loadeddata', restore);
@@ -90,27 +64,52 @@ export default function OpeningScene() {
     const video = videoRef.current;
     if (!video || phase !== 'idle') return;
 
-    setPhase('playing');
     configureVideoForIOS(video);
-    video.currentTime = 0;
-    video.muted = false;
 
+    // Su iOS, se il video non ha iniziato il download (readyState 0), forziamo load()
+    if (video.readyState === 0) {
+      video.load();
+    }
+
+    setPhase('playing');
+
+    // Tentativo 1: Avvio con audio
+    video.muted = false;
     try {
       await video.play();
+      setIsMuted(false);
+      setShowUnmuteHint(false);
     } catch {
+      // Fallback iOS Safari: se l'audio è bloccato (es. Silent switch su iPhone o autoplay policy),
+      // avviamo muto (ha il 100% di successo su iOS) e mostriamo il pulsante per attivare l'audio
       try {
         video.muted = true;
         await video.play();
-        video.muted = false;
-      } catch {
+        setIsMuted(true);
+        setShowUnmuteHint(true);
+      } catch (err) {
+        console.error('Impossibile avviare il video:', err);
         setPhase('idle');
       }
+    }
+  };
+
+  const handleToggleMute = (e: MouseEvent) => {
+    e.stopPropagation();
+    const video = videoRef.current;
+    if (!video) return;
+    const nextMuted = !video.muted;
+    video.muted = nextMuted;
+    setIsMuted(nextMuted);
+    if (!nextMuted) {
+      setShowUnmuteHint(false);
     }
   };
 
   const handleEnded = () => {
     freezeLastFrame();
     setPhase('ended');
+    setShowUnmuteHint(false);
   };
 
   const handleRevealCard = () => {
@@ -122,6 +121,18 @@ export default function OpeningScene() {
   return (
     <section className="opening" aria-label={`${GAME.title} — ${GAME.subtitle}`}>
       <div className="opening__frame">
+        {/* Pulsante rapido per attivare audio se Safari iOS ha forzato il muto */}
+        {phase === 'playing' && showUnmuteHint && (
+          <button
+            type="button"
+            className="opening__audio-btn"
+            onClick={handleToggleMute}
+            aria-label="Tocca per attivare l'audio"
+          >
+            🔊 Attiva audio
+          </button>
+        )}
+
         <div className={`entry-flip ${phase === 'ended' || phase === 'card' ? 'entry-flip--active' : ''}`}>
           <div
             className={[
@@ -136,9 +147,13 @@ export default function OpeningScene() {
               <video
                 ref={videoRef}
                 className="opening__video"
+                src={OPENING_VIDEO.src}
+                poster={OPENING_VIDEO.poster}
                 playsInline
+                webkit-playsinline="true"
+                x-webkit-airplay="deny"
                 preload="auto"
-                muted={false}
+                muted={isMuted}
                 controls={false}
                 controlsList="nodownload noplaybackrate noremoteplayback"
                 disablePictureInPicture
@@ -152,7 +167,7 @@ export default function OpeningScene() {
               {phase === 'idle' && (
                 <div className="opening__overlay opening__overlay--idle">
                   <div className="opening__actions opening__actions--solo">
-                    <StartButton onClick={handleStart} disabled={!ready} />
+                    <StartButton onClick={handleStart} />
                   </div>
                 </div>
               )}
@@ -170,7 +185,7 @@ export default function OpeningScene() {
             </div>
 
             <div className="entry-flip__face entry-flip__face--back">
-              <InteractiveFlipCard />
+              <InteractiveFlipCard onChoice={onChoice} />
             </div>
           </div>
         </div>

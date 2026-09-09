@@ -8,8 +8,22 @@ export const GAME = {
 } as const;
 
 export const OPENING_VIDEO = {
-  /** File locale in public/media — sostituire con URL cloud in prod se preferito */
   src: '/media/opening.mp4',
-  /** Opzionale: poster statico; se assente si usa il primo fotogramma del video */
-  poster: undefined as string | undefined,
+  poster: '/media/opening-poster.png',
 } as const;
+
+export const SCENE_1_VIDEO = {
+  id: 'scene-1-esamina',
+  title: 'Capitolo 1 — Esamina',
+  subtitle: 'La lettera sigillata e la lama d’argento',
+  src: '/media/video1.mp4',
+  poster: '/media/retrocard.jpg',
+} as const;
+
+export const SCENE_2_VIDEO = {
+  id: 'scene-2-video',
+  title: 'Capitolo 2 — La Scelta',
+  src: '/media/video2.mp4',
+  cardImage: '/media/card2.png',
+} as const;
+

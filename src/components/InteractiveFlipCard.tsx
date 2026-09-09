@@ -10,6 +10,7 @@ export default function InteractiveFlipCard({ onChoice }: InteractiveFlipCardPro
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const handleChoiceClick = (event: MouseEvent<HTMLAnchorElement>, choice: ChoiceHotspot) => {
+    event.preventDefault();
     event.stopPropagation();
     onChoice?.(choice);
   };
