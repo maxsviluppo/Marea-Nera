@@ -25,7 +25,6 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
 
   const [phase, setPhase] = useState<Phase>('video1_playing');
   const [isMuted, setIsMuted] = useState(false);
-  const [showAudioBadge, setShowAudioBadge] = useState(false);
 
   // Inizializzazione video1 al montaggio
   useEffect(() => {
@@ -39,16 +38,14 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
         v1.muted = false;
         await v1.play();
         setIsMuted(false);
-        setShowAudioBadge(false);
       } catch {
-        // Fallback Safari iOS (es. Silent switch attivo)
+        // Fallback Safari iOS
         try {
           v1.muted = true;
           await v1.play();
           setIsMuted(true);
-          setShowAudioBadge(true);
         } catch (err) {
-          console.warn('Avvio video1 in attesa di tap:', err);
+          console.warn('Avvio video1 in attesa di tocco utente:', err);
         }
       }
     };
@@ -63,7 +60,7 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
     configureVideoForIOS(v2);
   }, []);
 
-  // Fine video1 -> freeze ultimo fotogramma e mostra "Premi per continuare"
+  // Fine video1 -> freeze ultimo fotogramma e mostra 'Premi per continuare'
   const handleVideo1Ended = () => {
     const v1 = video1Ref.current;
     if (v1 && v1.duration && Number.isFinite(v1.duration)) {
@@ -95,20 +92,18 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
         v2.muted = true;
         await v2.play();
         setIsMuted(true);
-        setShowAudioBadge(true);
       } catch (err) {
         console.error('Errore avvio video2:', err);
       }
     }
   };
 
-  // Fine video2 -> flip card e mostra card2.png
+  // Fine video2 -> flip card e mostra card2.jpg
   const handleVideo2Ended = () => {
     setPhase('card2');
-    setShowAudioBadge(false);
   };
 
-  // Toggle audio
+  // Toggle audio circolare in basso a sinistra
   const handleToggleAudio = (e: MouseEvent) => {
     e.stopPropagation();
     const activeVideo = phase === 'video2_playing' ? video2Ref.current : video1Ref.current;
@@ -117,13 +112,11 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
     const nextMuted = !activeVideo.muted;
     activeVideo.muted = nextMuted;
     setIsMuted(nextMuted);
-    if (!nextMuted) {
-      setShowAudioBadge(false);
-    }
   };
 
-  // Salta al termine del video corrente (opzionale per comodità)
-  const handleSkipCurrent = () => {
+  // Salta video circolare in basso a destra
+  const handleSkipCurrent = (e: MouseEvent) => {
+    e.stopPropagation();
     if (phase === 'video1_playing') {
       handleVideo1Ended();
     } else if (phase === 'video2_playing') {
@@ -132,9 +125,10 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
   };
 
   const isFlipped = phase === 'card2';
+  const isVideoActive = phase === 'video1_playing' || phase === 'video2_playing';
 
   return (
-    <section className="scene-page" aria-label="Marea Nera — Scena 1 ed Evoluzione">
+    <section className="scene-page" aria-label="Marea Nera — Scena del Libro">
       <div className="scene-page__frame">
         {/* Top Header */}
         <header className="scene-page__header">
@@ -146,21 +140,29 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
           >
             ← Libro
           </button>
-          <span className="scene-page__badge">
-            {phase === 'card2' ? 'Decisioni Cruciali' : 'Capitolo 1'}
-          </span>
         </header>
 
-        {/* Audio badge iOS se il video è mutato */}
-        {showAudioBadge && (phase === 'video1_playing' || phase === 'video2_playing') && (
-          <button
-            type="button"
-            className="scene-page__audio-btn"
-            onClick={handleToggleAudio}
-            aria-label="Tocca per attivare l'audio"
-          >
-            🔊 Tocca per attivare audio
-          </button>
+        {/* Icone circolari semi-trasparenti: Audio (basso a sx) e Skip (basso a dx) sempre presenti durante i filmati */}
+        {isVideoActive && (
+          <>
+            <button
+              type="button"
+              className="video-circle-btn video-circle-btn--audio"
+              onClick={handleToggleAudio}
+              aria-label={isMuted ? 'Attiva audio' : 'Disattiva audio'}
+            >
+              {isMuted ? '🔇' : '🔊'}
+            </button>
+
+            <button
+              type="button"
+              className="video-circle-btn video-circle-btn--skip"
+              onClick={handleSkipCurrent}
+              aria-label="Salta filmato"
+            >
+              ⏭
+            </button>
+          </>
         )}
 
         {/* 3D Flip tra i Video (Fronte) e Card 2 (Retro) */}
@@ -209,37 +211,20 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
                 </video>
               </div>
 
-              {/* Pulsante 'Premi per continuare' quando video1 è terminato */}
+              {/* Scritta 'Premi per continuare' uniforme per tutto il gioco */}
               {phase === 'video1_ended' && (
                 <button
                   type="button"
-                  className="scene-page__tap-layer"
+                  className="continue-tap-layer"
                   onClick={handleStartVideo2}
-                  aria-label="Premi per continuare al secondo video"
+                  aria-label="Premi per continuare"
                 >
-                  <span className="scene-page__continue-hint">Premi per continuare</span>
+                  <span className="continue-hint">Premi per continuare</span>
                 </button>
-              )}
-
-              {/* Controlli minimi durante la riproduzione dei video */}
-              {(phase === 'video1_playing' || phase === 'video2_playing') && (
-                <div className="scene-page__mini-controls">
-                  <span className="scene-page__time-hint" style={{ color: 'rgba(240,216,120,0.85)', fontSize: '0.85rem' }}>
-                    {phase === 'video1_playing' ? 'Scena 1' : 'Scena 2'}
-                  </span>
-                  <button
-                    type="button"
-                    className="scene-page__skip-btn"
-                    onClick={handleSkipCurrent}
-                    aria-label="Salta video"
-                  >
-                    Salta ⏭
-                  </button>
-                </div>
               )}
             </div>
 
-            {/* Retro: Card 2 con le 4 aree interattive */}
+            {/* Retro: Card 2 con le 4 aree identiche al metodo di Card 1 */}
             <div className="scene-flip__face scene-flip__face--back">
               <InteractiveCard2 onChoice={onChoiceCard2} />
             </div>

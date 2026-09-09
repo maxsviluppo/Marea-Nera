@@ -23,7 +23,6 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
   const lastFrameRef = useRef(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const [isMuted, setIsMuted] = useState(false);
-  const [showUnmuteHint, setShowUnmuteHint] = useState(false);
 
   const freezeLastFrame = useCallback(() => {
     const video = videoRef.current;
@@ -66,27 +65,22 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
 
     configureVideoForIOS(video);
 
-    // Su iOS, se il video non ha iniziato il download (readyState 0), forziamo load()
     if (video.readyState === 0) {
       video.load();
     }
 
     setPhase('playing');
 
-    // Tentativo 1: Avvio con audio
     video.muted = false;
     try {
       await video.play();
       setIsMuted(false);
-      setShowUnmuteHint(false);
     } catch {
-      // Fallback iOS Safari: se l'audio è bloccato (es. Silent switch su iPhone o autoplay policy),
-      // avviamo muto (ha il 100% di successo su iOS) e mostriamo il pulsante per attivare l'audio
+      // Fallback Safari iOS (es. iPhone con switch Silenzioso attivo)
       try {
         video.muted = true;
         await video.play();
         setIsMuted(true);
-        setShowUnmuteHint(true);
       } catch (err) {
         console.error('Impossibile avviare il video:', err);
         setPhase('idle');
@@ -101,15 +95,11 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
     const nextMuted = !video.muted;
     video.muted = nextMuted;
     setIsMuted(nextMuted);
-    if (!nextMuted) {
-      setShowUnmuteHint(false);
-    }
   };
 
   const handleEnded = () => {
     freezeLastFrame();
     setPhase('ended');
-    setShowUnmuteHint(false);
   };
 
   const handleRevealCard = () => {
@@ -121,16 +111,26 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
   return (
     <section className="opening" aria-label={`${GAME.title} — ${GAME.subtitle}`}>
       <div className="opening__frame">
-        {/* Pulsante rapido per attivare audio se Safari iOS ha forzato il muto */}
-        {phase === 'playing' && showUnmuteHint && (
-          <button
-            type="button"
-            className="opening__audio-btn"
-            onClick={handleToggleMute}
-            aria-label="Tocca per attivare l'audio"
-          >
-            🔊 Attiva audio
-          </button>
+        {/* Controlli circolari semi-trasparenti: Audio (basso a sx) e Skip (basso a dx) */}
+        {phase === 'playing' && (
+          <>
+            <button
+              type="button"
+              className="video-circle-btn video-circle-btn--audio"
+              onClick={handleToggleMute}
+              aria-label={isMuted ? 'Attiva audio' : 'Disattiva audio'}
+            >
+              {isMuted ? '🔇' : '🔊'}
+            </button>
+            <button
+              type="button"
+              className="video-circle-btn video-circle-btn--skip"
+              onClick={handleEnded}
+              aria-label="Salta filmato iniziale"
+            >
+              ⏭
+            </button>
+          </>
         )}
 
         <div className={`entry-flip ${phase === 'ended' || phase === 'card' ? 'entry-flip--active' : ''}`}>
@@ -172,14 +172,15 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
                 </div>
               )}
 
+              {/* Scritta 'Premi per continuare' uniforme per tutto il gioco */}
               {phase === 'ended' && (
                 <button
                   type="button"
-                  className="opening__tap-layer"
+                  className="continue-tap-layer"
                   onClick={handleRevealCard}
-                  aria-label="Tocca per continuare l'avventura"
+                  aria-label="Premi per continuare l'avventura"
                 >
-                  <span className="opening__continue-hint">Tocca per continuare</span>
+                  <span className="continue-hint">Premi per continuare</span>
                 </button>
               )}
             </div>

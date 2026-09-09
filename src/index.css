@@ -70,3 +70,97 @@ video::-webkit-media-controls {
 video::-webkit-media-controls-enclosure {
   display: none !important;
 }
+
+/* Pulsanti circolari semi-trasparenti per Audio e Skip su tutti i video */
+.video-circle-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(10, 22, 40, 0.65);
+  border: 1px solid rgba(240, 216, 120, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f0d878;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 30;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.video-circle-btn:active {
+  transform: scale(0.92);
+  background: rgba(201, 162, 39, 0.35);
+  border-color: #f0d878;
+}
+
+.video-circle-btn--audio {
+  position: absolute;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  left: 1.25rem;
+}
+
+.video-circle-btn--skip {
+  position: absolute;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  right: 1.25rem;
+}
+
+/* Layer e Scritta 'Premi per continuare' uniforme per tutto il gioco */
+.continue-tap-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 60%,
+    rgba(5, 10, 18, 0.75) 100%
+  );
+  border: none;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.continue-hint {
+  font-family: var(--pirate-font);
+  font-size: clamp(1.15rem, 4.5vw, 1.45rem);
+  letter-spacing: 0.12em;
+  color: #f0d878;
+  text-shadow:
+    0 0 10px rgba(240, 216, 120, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.9);
+  animation: unified-hint-pulse 2.2s ease-in-out infinite;
+  background: rgba(10, 22, 40, 0.82);
+  border: 1px solid rgba(240, 216, 120, 0.55);
+  border-radius: 9999px;
+  padding: 0.5rem 1.45rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@keyframes unified-hint-pulse {
+  0%, 100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+    box-shadow: 0 6px 26px rgba(240, 216, 120, 0.35);
+  }
+}
+

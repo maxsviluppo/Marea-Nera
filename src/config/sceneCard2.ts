@@ -2,7 +2,7 @@ import { type ChoiceHotspot } from './sceneCard1';
 
 export const SCENE_CARD_2 = {
   id: 'card-2',
-  image: '/media/card2.png',
+  image: '/media/card2.jpg',
   chapter: 'Capitolo 2: Decisioni Cruciali',
   choices: [
     {
