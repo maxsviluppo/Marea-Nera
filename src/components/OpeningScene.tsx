@@ -3,6 +3,7 @@ import { GAME, OPENING_VIDEO } from '../config/media';
 import { type ChoiceHotspot } from '../config/sceneCard1';
 import InteractiveFlipCard from './InteractiveFlipCard';
 import StartButton from './StartButton';
+import { GameAudioOnIcon, GameAudioOffIcon, GameSkipIcon } from './GameIcons';
 import './OpeningScene.css';
 
 type Phase = 'idle' | 'playing' | 'ended' | 'card';
@@ -111,7 +112,7 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
   return (
     <section className="opening" aria-label={`${GAME.title} — ${GAME.subtitle}`}>
       <div className="opening__frame">
-        {/* Controlli circolari semi-trasparenti: Audio (basso a sx) e Skip (basso a dx) */}
+        {/* Controlli circolari semi-trasparenti con icone di gioco SVG */}
         {phase === 'playing' && (
           <>
             <button
@@ -120,7 +121,7 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
               onClick={handleToggleMute}
               aria-label={isMuted ? 'Attiva audio' : 'Disattiva audio'}
             >
-              {isMuted ? '🔇' : '🔊'}
+              {isMuted ? <GameAudioOffIcon /> : <GameAudioOnIcon />}
             </button>
             <button
               type="button"
@@ -128,7 +129,7 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
               onClick={handleEnded}
               aria-label="Salta filmato iniziale"
             >
-              ⏭
+              <GameSkipIcon />
             </button>
           </>
         )}
@@ -143,7 +144,10 @@ export default function OpeningScene({ onChoice }: OpeningSceneProps) {
               .filter(Boolean)
               .join(' ')}
           >
-            <div className="entry-flip__face entry-flip__face--front">
+            <div
+              className="entry-flip__face entry-flip__face--front"
+              style={phase === 'card' ? { visibility: 'hidden', opacity: 0, pointerEvents: 'none' } : undefined}
+            >
               <video
                 ref={videoRef}
                 className="opening__video"

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { SCENE_1_VIDEO, SCENE_2_VIDEO } from '../config/media';
 import { type ChoiceHotspot } from '../config/sceneCard1';
 import InteractiveCard2 from './InteractiveCard2';
+import { GameAudioOnIcon, GameAudioOffIcon, GameSkipIcon } from './GameIcons';
 import './SceneVideoPage.css';
 
 type Phase = 'video1_playing' | 'video1_ended' | 'video2_playing' | 'card2';
@@ -39,7 +40,7 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
         await v1.play();
         setIsMuted(false);
       } catch {
-        // Fallback Safari iOS
+        // Fallback Safari iOS (es. Silent switch attivo)
         try {
           v1.muted = true;
           await v1.play();
@@ -98,12 +99,16 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
     }
   };
 
-  // Fine video2 -> flip card e mostra card2.jpg
+  // Fine video2 -> flip card e mostra card2.jpg (e stoppa/nasconde video)
   const handleVideo2Ended = () => {
+    const v1 = video1Ref.current;
+    const v2 = video2Ref.current;
+    if (v1) v1.pause();
+    if (v2) v2.pause();
     setPhase('card2');
   };
 
-  // Toggle audio circolare in basso a sinistra
+  // Toggle audio circolare in basso a sinistra (icona di gioco SVG)
   const handleToggleAudio = (e: MouseEvent) => {
     e.stopPropagation();
     const activeVideo = phase === 'video2_playing' ? video2Ref.current : video1Ref.current;
@@ -114,7 +119,7 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
     setIsMuted(nextMuted);
   };
 
-  // Salta video circolare in basso a destra
+  // Salta video circolare in basso a destra (icona di gioco SVG)
   const handleSkipCurrent = (e: MouseEvent) => {
     e.stopPropagation();
     if (phase === 'video1_playing') {
@@ -142,7 +147,7 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
           </button>
         </header>
 
-        {/* Icone circolari semi-trasparenti: Audio (basso a sx) e Skip (basso a dx) sempre presenti durante i filmati */}
+        {/* Icone circolari semi-trasparenti: Audio (basso a sx) e Skip (basso a dx) con SVG di gioco */}
         {isVideoActive && (
           <>
             <button
@@ -151,7 +156,7 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
               onClick={handleToggleAudio}
               aria-label={isMuted ? 'Attiva audio' : 'Disattiva audio'}
             >
-              {isMuted ? '🔇' : '🔊'}
+              {isMuted ? <GameAudioOffIcon /> : <GameAudioOnIcon />}
             </button>
 
             <button
@@ -160,7 +165,7 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
               onClick={handleSkipCurrent}
               aria-label="Salta filmato"
             >
-              ⏭
+              <GameSkipIcon />
             </button>
           </>
         )}
@@ -168,8 +173,11 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
         {/* 3D Flip tra i Video (Fronte) e Card 2 (Retro) */}
         <div className="scene-flip">
           <div className={`scene-flip__inner ${isFlipped ? 'scene-flip__inner--flipped' : ''}`}>
-            {/* Fronte: Video 1 e Video 2 */}
-            <div className="scene-flip__face scene-flip__face--front">
+            {/* Fronte: Video 1 e Video 2. Su iOS viene nascosto completamente quando isFlipped è true per evitare il bug del video specchiato */}
+            <div
+              className="scene-flip__face scene-flip__face--front"
+              style={isFlipped ? { display: 'none', visibility: 'hidden', opacity: 0, pointerEvents: 'none' } : undefined}
+            >
               <div className="scene-page__video-container">
                 {/* Video 1 */}
                 <video
@@ -224,7 +232,7 @@ export default function SceneVideoPage({ onBack, onChoiceCard2 }: SceneVideoPage
               )}
             </div>
 
-            {/* Retro: Card 2 con le 4 aree identiche al metodo di Card 1 */}
+            {/* Retro: Card 2 (card2.jpg) con lo stesso metodo di Card 1 */}
             <div className="scene-flip__face scene-flip__face--back">
               <InteractiveCard2 onChoice={onChoiceCard2} />
             </div>

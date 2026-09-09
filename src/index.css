@@ -101,6 +101,13 @@ video::-webkit-media-controls-enclosure {
   border-color: #f0d878;
 }
 
+.video-circle-btn svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  stroke: currentColor;
+}
+
 .video-circle-btn--audio {
   position: absolute;
   bottom: max(1.25rem, env(safe-area-inset-bottom));
